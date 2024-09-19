@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="threadpool.h">
+    <ClInclude Include="threadpool.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

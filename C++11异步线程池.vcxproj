@@ -127,7 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="threadpool.h" />
+    <ClInclude Include="threadpool.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="threadpool.cpp" />

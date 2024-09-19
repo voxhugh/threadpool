@@ -1,4 +1,4 @@
-#include "threadpool.h"
+#include "threadpool.hpp"
 
 ThreadPool::ThreadPool(int min, int max) :m_minThreads(min), m_maxThreads(max), m_Stop(false), m_exitNum(0)
 {
@@ -29,18 +29,9 @@ ThreadPool::~ThreadPool()
 	}
 	if (m_Manager->joinable())
 	{
-		delete m_Manager;
+		m_Manager->join();
 	}
-}
-
-// 生产者任务函数
-void ThreadPool::addTask(function<void()> f)
-{
-	unique_lock<mutex> mtx(m_taskMutex);
-	m_Tasks.emplace(f);
-	mtx.unlock();
-
-	m_condition.notify_one();
+	delete m_Manager;
 }
 
 // 管理器任务函数
@@ -100,7 +91,7 @@ void ThreadPool::worker()
 				m_condition.wait(lck);
 				if (m_exitNum > 0)
 				{
-					cout << "----------------- 线程任务结束, ID: " << this_thread::get_id() << endl;
+					cout << "--------------- 线程任务结束, ID: " << this_thread::get_id() << endl;
 					--m_curThread;
 					--m_exitNum;
 					lock_guard<mutex> locker(m_idsMutex);
@@ -126,21 +117,24 @@ void ThreadPool::worker()
 	}
 }
 
-void calc(int x, int y)
+int calc(int x, int y)
 {
 	int res = x + y;
-	cout << "res = " << res << endl;
 	this_thread::sleep_for(chrono::seconds(2));
+	return res;
 }
 
 int main()
 {
-	ThreadPool t(4);
+	ThreadPool pool(4);
+	vector<future<int>> ans;
 	for (int i = 0; i < 10; ++i)
 	{
-		auto func = bind(calc, i, 2 * i);
-		t.addTask(func);
+		ans.emplace_back(pool.addTask(bind(calc, i, 2 * i)));
 	}
-	getchar();
+	for (auto&& x : ans)
+	{
+		cout << "线程函数返回值: " << x.get() << endl;
+	}
 	return 0;
 }
